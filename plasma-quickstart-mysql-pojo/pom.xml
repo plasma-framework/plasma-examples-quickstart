@@ -44,17 +44,23 @@
 			<groupId>org.cloudgraph</groupId>
 			<artifactId>cloudgraph-rdb</artifactId>
 			<version>${cloudgraph.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>cloudgraph-mapreduce</artifactId>
+					<groupId>org.cloudgraph</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-		    <groupId>mysql</groupId>
-		    <artifactId>mysql-connector-java</artifactId>
-		    <version>5.1.23</version>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.23</version>
 		</dependency>
-		<dependency>                                 
-		    <groupId>commons-dbcp</groupId>          
-		    <artifactId>commons-dbcp</artifactId>    
-		    <version>1.4</version>                   
-		</dependency>                                
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>
@@ -88,12 +94,19 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 				<executions>
+					<!-- NOTE: we need 2 executions in the compiler plugin because the annotation 
+						discovery for your annotated Java requires COMPILED classes. The compiled 
+						annotated classes are first used at generate-sources phase, then for several 
+						later Maven phases. An alternative to this "trick" is to isolated your annotated 
+						classes in a separate compiled Maven module, then perform the code generation 
+						in a second module which depends on the first. -->
 					<execution>
 						<id>default-compile</id>
 						<phase>generate-sources</phase>
 						<configuration>
 							<excludes>
 								<exclude>**/generated-sources/*</exclude>
+								<exclude>**/examples/quickstart/*</exclude>
 							</excludes>
 						</configuration>
 					</execution>
@@ -122,6 +135,22 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>net.revelc.code</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>0.5.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<configFile>${project.basedir}/formatter.xml</configFile>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.terrameta</groupId>
 				<artifactId>plasma-maven-plugin</artifactId>
 				<version>${plasma.version}</version>
@@ -137,14 +166,14 @@
 						<version>${cloudgraph.version}</version>
 					</dependency>
 				</dependencies>
-				<executions>				       
+				<executions>
 					<execution>
 						<id>sdo-create</id>
 						<configuration>
 							<action>create</action>
 							<dialect>java</dialect>
 							<additionalClasspathElements>
-								<log4j.configuration>log4j.properties</log4j.configuration>
+								<param>${basedir}/src/main/resources</param>
 								<param>${basedir}/target/classes</param>
 							</additionalClasspathElements>
 							<outputDirectory>${basedir}/target/generated-sources/java</outputDirectory>
@@ -159,7 +188,7 @@
 							<action>create</action>
 							<dialect>java</dialect>
 							<additionalClasspathElements>
-								<log4j.configuration>log4j.properties</log4j.configuration>
+								<param>${basedir}/src/main/resources</param>
 								<param>${basedir}/target/classes</param>
 							</additionalClasspathElements>
 							<outputDirectory>${basedir}/target/generated-sources/java</outputDirectory>
@@ -167,14 +196,14 @@
 						<goals>
 							<goal>dsl</goal>
 						</goals>
-					</execution>					     
+					</execution>
 					<execution>
 						<id>ddl-create-mysql</id>
 						<configuration>
 							<action>create</action>
 							<dialect>mysql</dialect>
 							<additionalClasspathElements>
-								<log4j.configuration>log4j.properties</log4j.configuration>
+								<param>${basedir}/src/main/resources</param>
 								<param>${basedir}/target/classes</param>
 							</additionalClasspathElements>
 							<outputDirectory>${basedir}/target/ddl</outputDirectory>
@@ -186,22 +215,51 @@
 					</execution>
 				</executions>
 			</plugin>
-			  
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>examples.quickstart.ExampleRunner</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>assemble-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<descriptors>
+						<descriptor>maven-assembly-dist.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.10</version>
 				<configuration>
-<!-- 				    <argLine>-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=8001,server=y,suspend=y</argLine> -->
+					<!-- <argLine>-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=8001,server=y,suspend=y</argLine> -->
 					<useSystemClassLoader>true</useSystemClassLoader>
-					<useManifestOnlyJar>true</useManifestOnlyJar>					   
+					<useManifestOnlyJar>true</useManifestOnlyJar>
 					<additionalClasspathElements>
 						<additionalClasspathElement>${basedir}/src/main/resources</additionalClasspathElement>
 					</additionalClasspathElements>
-					<forkMode>pertest</forkMode> 
+					<forkMode>pertest</forkMode>
 				</configuration>
 			</plugin>
-			  
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -221,12 +279,31 @@
 											plasma-maven-plugin
 										</artifactId>
 										<versionRange>
-											[1.3.3,)
+											[2.0.0,)
 										</versionRange>
 										<goals>
 											<goal>sdo</goal>
 											<goal>dsl</goal>
 											<goal>rdb</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											net.revelc.code
+										</groupId>
+										<artifactId>
+											formatter-maven-plugin
+										</artifactId>
+										<versionRange>
+											[0.5.2,)
+										</versionRange>
+										<goals>
+											<goal>format</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>

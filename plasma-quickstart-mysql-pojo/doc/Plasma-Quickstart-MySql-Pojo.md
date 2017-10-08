@@ -27,7 +27,7 @@ examples which accomplany this guide.
 **Plasma Quick Start MySql (POJO)**
 ===================================
 
-**Add Build Time Plasma Dependencies**
+**Add Plasma Dependencies**
 --------------------------------------
 
 Add the following dependency to your Maven project to get started.
@@ -272,12 +272,14 @@ connection pooling library, DBCP.
 **Insert and Query MySql Data**
 -------------------------------
 
-And finally create a test class as below which inserts a parent and clild
-organization with a single employee under the child, then queries for the
+And finally create a class as below which inserts 2 organizations (parent and
+child) with a single employee under the child. The example then queries for the
 “graph” traversing the foreign key refrences from the person (as a root) back to
-the employer organization and then the parent organization. Then prints the
-serialized result graph as formatted XML for easy visualization and debugging.
-The output should look like the below XML example.
+the employer organization and then the parent organization. Then final y the
+example prints the serialized result graph as formatted XML for easy
+visualization and debugging. The final output should look like the below XML
+example. See <https://github.com/plasma-framework/plasma-examples-quickstart>
+for working examples which accomplany this guide.
 
 **Figure 3 – Result Graph, Serialized as XML**
 
@@ -293,60 +295,66 @@ The output should look like the below XML example.
 **Figure 4 – Inser/Query MySql Data**
 
 ```java
-import org.junit.Test;
-import org.plasma.runtime.DataAccessProviderName;
-import org.plasma.sdo.PlasmaDataGraph;
-import org.plasma.sdo.access.client.PojoDataAccessClient;
-import org.plasma.sdo.access.client.SDODataAccessClient;
-import org.plasma.sdo.helper.PlasmaDataFactory;
-import org.plasma.sdo.helper.PlasmaTypeHelper;
-import quickstart.pojo.model.OrgCat;
-import quickstart.pojo.model.Organization;
-import quickstart.pojo.model.Person;
-import quickstart.pojo.model.query.QPerson;
-import commonj.sdo.DataGraph;
-import commonj.sdo.Type;
-public class PojoTest {
+package examples.quickstart;
 
-  @Test
-  public void insertTest() throws IOException {
-    String randomSuffix = String.valueOf(System.nanoTime()).substring(10);
-    SDODataAccessClient client = new SDODataAccessClient(new PojoDataAccessClient(DataAccessProviderName.JDBC));
+import java.io.IOException;
+import java.util.Date;
+import org.plasma.runtime.*;
+import org.plasma.sdo.*;
+import org.plasma.sdo.access.client.*;
+import org.plasma.sdo.helper.*;
+import quickstart.pojo.model.*;
+import quickstart.pojo.model.query.QPerson;
+import commonj.sdo.*;
+
+public class ExampleRunner {
+
+  public static PlasmaDataGraph runExample() throws IOException {
+    SDODataAccessClient client = new SDODataAccessClient(new PojoDataAccessClient(
+        DataAccessProviderName.JDBC));
+
     DataGraph dataGraph = PlasmaDataFactory.INSTANCE.createDataGraph();
     dataGraph.getChangeSummary().beginLogging();
     Type rootType = PlasmaTypeHelper.INSTANCE.getType(Organization.class);
-    
+    String randomSuffix = String.valueOf(System.nanoTime()).substring(10);
+
     Organization org = (Organization) dataGraph.createRootObject(rootType);
-    org.setName("Best Buy Corporation Inc. ("+randomSuffix+")");
+    org.setName("Best Buy Corporation Inc. (" + randomSuffix + ")");
     org.setCategory(OrgCat.RETAIL.getInstanceName());
     org.setCreatedDate(new Date());
-    
+
     Organization child = org.createChild();
-    child.setName("Best Buy Sales ("+randomSuffix+")");
+    child.setName("Best Buy Sales (" + randomSuffix + ")");
     child.setCategory(OrgCat.RETAIL.getInstanceName());
     child.setCreatedDate(new Date());
-    
+
     Person pers = child.createEmployee();
     pers.setFirstName("Mark");
-    pers.setLastName("Hamburg ("+randomSuffix+")");
+    pers.setLastName("Hamburg (" + randomSuffix + ")");
     pers.setAge(55);
     pers.setCreatedDate(new Date());
-    
-    client.commit(dataGraph, PojoTest.class.getSimpleName());
-    
+
+    client.commit(dataGraph, ExampleRunner.class.getSimpleName());
+
     QPerson query = QPerson.newQuery();
-    query.select(query.wildcard())
-         .select(query.employer().name())
-         .select(query.employer().parent().name())
-         .select(query.employer().parent().category());
-    query.where(query.firstName().eq("Mark")
-         .and(query.lastName().like("Ham*")));
-    
+    query.select(query.wildcard()).select(query.employer().name())
+        .select(query.employer().parent().name()).select(query.employer().parent().category());
+    query.where(query.firstName().eq("Mark").and(query.lastName().like("Ham*")));
+
     DataGraph[] results = client.find(query);
-    
-    System.out.println((((PlasmaDataGraph)results[0]).asXml()));
+    return (PlasmaDataGraph) results[0];
+  }
+
+  public static void main(String[] args) {
+    try {
+      PlasmaDataGraph graph = runExample();
+      System.out.println(graph.asXml());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
+
 ```
 
 See <https://github.com/plasma-framework/plasma-examples-quickstart> for working
@@ -362,69 +370,111 @@ examples which accomplany this guide.
 
 ```xml
 <plugin>
-	<groupId>org.terrameta</groupId>
-	<artifactId>plasma-maven-plugin</artifactId>
-	<version>${plasma.version}</version>
-	<dependencies>
-		<dependency>
-			<groupId>org.terrameta</groupId>
-			<artifactId>plasma-core</artifactId>
-			<version>${plasma.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.cloudgraph</groupId>
-			<artifactId>cloudgraph-rdb</artifactId>
-			<version>${cloudgraph.version}</version>
-		</dependency>
-	</dependencies>
-	<executions>				       
-		<execution>
-			<id>sdo-create</id>
-			<configuration>
-				<action>create</action>
-				<dialect>java</dialect>
-				<additionalClasspathElements>
-					<log4j.configuration>log4j.properties</log4j.configuration>
-					<param>${basedir}/target/classes</param>
-				</additionalClasspathElements>
-				<outputDirectory>${basedir}/target/generated-sources/java</outputDirectory>
-			</configuration>
-			<goals>
-				<goal>sdo</goal>
-			</goals>
-		</execution>
-		<execution>
-			<id>dsl-create</id>
-			<configuration>
-				<action>create</action>
-				<dialect>java</dialect>
-				<additionalClasspathElements>
-					<log4j.configuration>log4j.properties</log4j.configuration>
-					<param>${basedir}/target/classes</param>
-				</additionalClasspathElements>
-				<outputDirectory>${basedir}/target/generated-sources/java</outputDirectory>
-			</configuration>
-			<goals>
-				<goal>dsl</goal>
-			</goals>
-		</execution>					     
-		<execution>
-			<id>ddl-create-mysql</id>
-			<configuration>
-				<action>create</action>
-				<dialect>mysql</dialect>
-				<additionalClasspathElements>
-					<log4j.configuration>log4j.properties</log4j.configuration>
-					<param>${basedir}/target/classes</param>
-				</additionalClasspathElements>
-				<outputDirectory>${basedir}/target/ddl</outputDirectory>
-				<outputFile>mysql-create.sql</outputFile>
-			</configuration>
-			<goals>
-				<goal>rdb</goal>
-			</goals>
-		</execution>
-	</executions>
+  <groupId>org.terrameta</groupId>
+  <artifactId>plasma-maven-plugin</artifactId>
+  <version>${plasma.version}</version>
+  <dependencies>
+    <dependency>
+      <groupId>org.terrameta</groupId>
+      <artifactId>plasma-core</artifactId>
+      <version>${plasma.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.cloudgraph</groupId>
+      <artifactId>cloudgraph-rdb</artifactId>
+      <version>${cloudgraph.version}</version>
+    </dependency>
+  </dependencies>
+  <executions>                                   
+    <execution>
+      <id>sdo-create</id>
+      <configuration>
+        <action>create</action>
+        <dialect>java</dialect>
+        <additionalClasspathElements>
+          <param>${basedir}/target/classes</param>
+        </additionalClasspathElements>
+        <outputDirectory>${basedir}/target/generated-sources/java</outputDirectory>
+      </configuration>
+      <goals>
+        <goal>sdo</goal>
+      </goals>
+    </execution>
+    <execution>
+      <id>dsl-create</id>
+      <configuration>
+        <action>create</action>
+        <dialect>java</dialect>
+        <additionalClasspathElements>
+          <param>${basedir}/target/classes</param>
+        </additionalClasspathElements>
+        <outputDirectory>${basedir}/target/generated-sources/java</outputDirectory>
+      </configuration>
+      <goals>
+        <goal>dsl</goal>
+      </goals>
+    </execution>                                         
+    <execution>
+      <id>ddl-create-mysql</id>
+      <configuration>
+        <action>create</action>
+        <dialect>mysql</dialect>
+        <additionalClasspathElements>
+          <param>${basedir}/target/classes</param>
+        </additionalClasspathElements>
+        <outputDirectory>${basedir}/target/ddl</outputDirectory>
+        <outputFile>mysql-create.sql</outputFile>
+      </configuration>
+      <goals>
+        <goal>rdb</goal>
+      </goals>
+    </execution>
+  </executions>
 </plugin>
 ```
+
+Maven Compiler Plugin Configuration
+===================================
+
+We use 2 executions in the compiler plugin because the annotation discovery for
+your annotated Java requires COMPILED classes. The compiled annotated classes
+are first used at generate-sources phase, then for several later Maven phases.
+An alternative to this "trick" is to isolated your annotated classes in a
+separate compiled Maven module, then perform the code generation in a second
+module which depends on the first.
+
+```xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <version>2.3.2</version>
+  <configuration>
+     <source>1.7</source>
+     <target>1.7</target>
+     <encoding>UTF-8</encoding>
+  </configuration>
+  <executions>
+    <execution>
+      <id>default-compile</id>
+      <phase>generate-sources</phase>
+      <configuration>
+        <excludes>
+          <exclude>**/generated-sources/*</exclude>
+          <exclude>**/examples/quickstart/*</exclude>
+        </excludes>
+      </configuration>
+    </execution>
+    <execution>
+      <id>compile-generated</id>
+      <phase>compile</phase>
+      <goals>
+         <goal>compile</goal>
+      </goals>
+      <configuration>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+```
+
 .
