@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package examples.quickstart.mysql.pojo;
+package examples.quickstart.mysql.uml;
 
 import static org.junit.Assert.assertTrue;
 
@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.plasma.sdo.PlasmaDataGraph;
 
 import examples.quickstart.ExampleRunner;
-import quickstart.pojo.model.Person;
+import quickstart.model.Person;
 
 public class ExampleTest {
   @Test

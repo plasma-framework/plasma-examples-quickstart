@@ -17,23 +17,19 @@ package examples.quickstart;
 
 import java.io.IOException;
 import java.util.Date;
-
 import org.plasma.runtime.*;
 import org.plasma.sdo.*;
 import org.plasma.sdo.access.client.*;
 import org.plasma.sdo.helper.*;
-
-import quickstart.model.OrgCat;
-import quickstart.model.Organization;
-import quickstart.model.Person;
-import quickstart.model.query.QPerson;
+import quickstart.pojo.model.*;
+import quickstart.pojo.model.query.QPerson;
 import commonj.sdo.*;
 
 public class ExampleRunner {
 
   public static PlasmaDataGraph runExample() throws IOException {
     SDODataAccessClient client = new SDODataAccessClient(new PojoDataAccessClient(
-        DataAccessProviderName.JDBC));
+        DataAccessProviderName.HBASE));
 
     DataGraph dataGraph = PlasmaDataFactory.INSTANCE.createDataGraph();
     dataGraph.getChangeSummary().beginLogging();

@@ -2,10 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>plasma-examples</groupId>
-	<artifactId>plasma-quickstart-mysql-pojo</artifactId>
+	<artifactId>plasma-quickstart-hbase-pojo</artifactId>
 	<version>0.5.0</version>
 	<packaging>jar</packaging>
-	<name>Plasma Quickstart MySql Pojo</name>
+	<name>Plasma Quickstart HBase Pojo</name>
 	<description>An example project using Plasma POJO metadata</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,24 +42,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cloudgraph</groupId>
-			<artifactId>cloudgraph-rdb</artifactId>
+			<artifactId>cloudgraph-hbase</artifactId>
 			<version>${cloudgraph.version}</version>
-<!-- 			<exclusions> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>cloudgraph-mapreduce</artifactId> -->
-<!-- 					<groupId>org.cloudgraph</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 			</exclusions> -->
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.23</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>1.4</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -149,7 +133,6 @@
 					<configFile>${project.basedir}/formatter.xml</configFile>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.terrameta</groupId>
 				<artifactId>plasma-maven-plugin</artifactId>
@@ -162,7 +145,7 @@
 					</dependency>
 					<dependency>
 						<groupId>org.cloudgraph</groupId>
-						<artifactId>cloudgraph-rdb</artifactId>
+						<artifactId>cloudgraph-hbase</artifactId>
 						<version>${cloudgraph.version}</version>
 					</dependency>
 				</dependencies>
@@ -195,22 +178,6 @@
 						</configuration>
 						<goals>
 							<goal>dsl</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>ddl-create-mysql</id>
-						<configuration>
-							<action>create</action>
-							<dialect>mysql</dialect>
-							<additionalClasspathElements>
-								<param>${basedir}/src/main/resources</param>
-								<param>${basedir}/target/classes</param>
-							</additionalClasspathElements>
-							<outputDirectory>${basedir}/target/ddl</outputDirectory>
-							<outputFile>mysql-create.sql</outputFile>
-						</configuration>
-						<goals>
-							<goal>rdb</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -263,8 +230,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -279,12 +245,11 @@
 											plasma-maven-plugin
 										</artifactId>
 										<versionRange>
-											[2.0.0,)
+											[2.0.1,)
 										</versionRange>
 										<goals>
 											<goal>sdo</goal>
 											<goal>dsl</goal>
-											<goal>rdb</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>

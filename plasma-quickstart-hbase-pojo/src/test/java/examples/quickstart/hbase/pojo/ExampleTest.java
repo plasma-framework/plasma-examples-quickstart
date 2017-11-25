@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package examples.quickstart.mysql.pojo;
+package examples.quickstart.hbase.pojo;
 
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +27,7 @@ import quickstart.pojo.model.Person;
 
 public class ExampleTest {
   @Test
-  public void testExample() throws IOException {
+  public void testExcmple() throws IOException {
     PlasmaDataGraph graph = ExampleRunner.runExample();
     System.out.println(graph.asXml());
     Person root = (Person) graph.getRootObject();

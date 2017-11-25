@@ -1,34 +1,35 @@
-﻿![icon](media/5cabe8ecef07e1b4c1f972e2fe29b2c8.png)
+![icon](media/5cabe8ecef07e1b4c1f972e2fe29b2c8.png)
 **Plasma**
 ========== 
 TerraMeta Software, Inc.
 
-**Plasma Quick Start MySql (POJO)**
+**Plasma Quick Start HBase (POJO)**
 ===================================
 PlasmaSDO<sup>®</sup> and PlasmaQuery<sup>®</sup> are registered of Trademarks of TerraMeta Software, Inc.
 
 **Introduction**
 ================
 
+
 This step-by-step guide uses only annotated Java (POJO) objects as the source of
 schema or metadata. It shows how to build a Maven project which generates a
-simple MySql data model with 2 tables which inserts, queries and prints test
-data from MySql. It requires basic knowledge of the Java programing language,
-Apache Maven, MySql Server administration and assumes the following software
+simple HBase data model with 2 tables which inserts, queries and prints test
+data from HBase. It requires basic knowledge of the Java programing language,
+Apache Maven, HBase Server administration and assumes the following software
 install prerequisites.
 
 -   Java JDK 1.7 or Above
 -   Maven 3.x or Above
--   MySql Server 5.5 or Above
+-   HBase 1.0 or Above
 
 See <https://github.com/plasma-framework/plasma-examples-quickstart> for working
 examples which accomplany this guide.
 
-**Plasma Quick Start MySql (POJO)**
+**Plasma Quick Start HBase (POJO)**
 ===================================
 
-**Add Plasma Dependencies**
---------------------------------------
+**Add Dependencies**
+---------------------------
 
 Add the following dependency to your Maven project to get started.
 
@@ -38,14 +39,20 @@ Add the following dependency to your Maven project to get started.
   <artifactId>plasma-core</artifactId>
   <version>2.0.1</version>
 </dependency>
+<dependency>
+  <groupId>org.cloudgraph</groupId>
+  <artifactId>cloudgraph-hbase</artifactId>
+  <version>1.0.8</version>
+</dependency>
 ```
 
-Create Entity POJOs 
+
+**Create Entity POJOs** 
 ------------------------
 
 Next create a classic “Person-Org” data model using just Java POJO’s. Create 4
 Java enumeration classes annotated as below in a Java package called
-**examples.quickstart.mysql.pojo***. (Note: Enumerations rather than Java
+**examples.quickstart.hbase.pojo***. (Note: Enumerations rather than Java
 classes are annotated to facilitate reuse across multiple code generation and
 metadata integration contexts. Your metadata is too valuable to relegate to a
 single context)*
@@ -71,10 +78,17 @@ The annotations capture typical structural metadata elements.
 -   Enumerations as Domain Value Lists. See
     [Enumeration](http://plasma-framework.github.io/plasma/apidocs/org/plasma/sdo/annotation/Enumeration.html).
 
-**Enumeration 1 – OrgCat.java**
+In addition for HBase add the
+[Table](https://cloudgraph.github.io/cloudgraph/apidocs/org/cloudgraph/store/mapping/annotation/Table.html)
+annotation and
+[RowKeyField](https://cloudgraph.github.io/cloudgraph/apidocs/org/cloudgraph/store/mapping/annotation/RowKeyField.html)
+annotations in order to map specific entities to HBase tables and map specific
+entity fields to row key fields.
+
+Enumeration 1 – OrgCat.java
 
 ```java
-package examples.quickstart.mysql.pojo;
+package examples.quickstart.hbase.pojo;
 import org.plasma.sdo.annotation.Alias;
 import org.plasma.sdo.annotation.Enumeration;
 
@@ -105,26 +119,27 @@ public enum Party {
 **Entity 2 – Person.java**
 
 ```java
-package examples.quickstart.mysql.pojo;
+package examples.quickstart.hbase.pojo;
 
+import org.cloudgraph.store.mapping.annotation.RowKeyField;
+import org.cloudgraph.store.mapping.annotation.Table;
 import org.plasma.sdo.DataType;
 import org.plasma.sdo.annotation.Alias;
 import org.plasma.sdo.annotation.DataProperty;
-import org.plasma.sdo.annotation.Key;
 import org.plasma.sdo.annotation.ReferenceProperty;
 import org.plasma.sdo.annotation.Type;
 import org.plasma.sdo.annotation.ValueConstraint;
-import org.plasma.sdo.profile.KeyType;
 
-@Alias(physicalName = "PERSON")
+@Table(name = "PERSON")
+@Alias(physicalName = "PRS")
 @Type(superTypes = { Party.class })
 public enum Person {
-  @Key(type = KeyType.primary)
+  @RowKeyField
   @ValueConstraint(maxLength = "36")
   @Alias(physicalName = "FN")
   @DataProperty(dataType = DataType.String, isNullable = false)
   firstName,
-  @Key(type = KeyType.primary)
+  @RowKeyField
   @ValueConstraint(maxLength = "36")
   @Alias(physicalName = "LN")
   @DataProperty(dataType = DataType.String, isNullable = false)
@@ -145,22 +160,23 @@ public enum Person {
 **Entity 3 – Organization.java**
 
 ```java
-package examples.quickstart.mysql.pojo;
+package examples.quickstart.hbase.pojo;
 
+import org.cloudgraph.store.mapping.annotation.RowKeyField;
+import org.cloudgraph.store.mapping.annotation.Table;
 import org.plasma.sdo.DataType;
 import org.plasma.sdo.annotation.Alias;
 import org.plasma.sdo.annotation.DataProperty;
 import org.plasma.sdo.annotation.EnumConstraint;
-import org.plasma.sdo.annotation.Key;
 import org.plasma.sdo.annotation.ReferenceProperty;
 import org.plasma.sdo.annotation.Type;
 import org.plasma.sdo.annotation.ValueConstraint;
-import org.plasma.sdo.profile.KeyType;
 
+@Table(name = "ORGAINZATION")
 @Alias(physicalName = "ORG")
 @Type(superTypes = { Party.class })
 public enum Organization {
-  @Key(type = KeyType.primary)
+  @RowKeyField
   @ValueConstraint(maxLength = "36")
   @Alias(physicalName = "NAME")
   @DataProperty(dataType = DataType.String, isNullable = false)
@@ -170,8 +186,7 @@ public enum Organization {
   @DataProperty(dataType = DataType.String, isNullable = false)
   category,
   @Alias(physicalName = "PARENT")
-  @ReferenceProperty(isNullable = true, isMany = false, targetClass =
-  Orginization.class, targetProperty = "child")
+  @ReferenceProperty(isNullable = true, isMany = false, targetClass = Organization.class, targetProperty = "child")
   parent,
   @Alias(physicalName = "CHILD")
   @ReferenceProperty(isNullable = true, isMany = true, targetClass = Organization.class, targetProperty = "parent")
@@ -195,107 +210,56 @@ on applying annotations to package_into.java see
 @Alias(physicalName = "HR")
 @Namespace(uri = "http://plasma-quickstart-pojo/humanresources")
 @NamespaceProvisioning(rootPackageName = "quickstart.pojo.model")
-@NamespaceService(storeType = DataStoreType.RDBMS,
-  providerName = DataAccessProviderName.JDBC,
-  properties = {
-    "org.plasma.sdo.access.provider.jdbc.ConnectionURL=jdbc:mysql://localhost:3306/hr?autoReconnect=true",
-    "org.plasma.sdo.access.provider.jdbc.ConnectionUserName=root",
-    "org.plasma.sdo.access.provider.jdbc.ConnectionPassword=yourpassword",
-    "org.plasma.sdo.access.provider.jdbc.ConnectionDriverName=com.mysql.jdbc.Driver",
-    "org.plasma.sdo.access.provider.jdbc.ConnectionProviderName=examples.quickstart.connect.DBCPConnectionPoolProvider",
-    "org.plasma.sdo.access.provider.jdbc.ConnectionPoolMinSize=1",
-    "org.plasma.sdo.access.provider.jdbc.ConnectionPoolMaxSize=10",
-    "org.apache.commons.dbcp.validationQuery=SELECT COUNT(\) FROM person",
-    "org.apache.commons.dbcp.testOnBorrow=false",
-    "org.apache.commons.dbcp.testOnReturn=false",
-    "org.apache.commons.dbcp.maxWait=30000",
-    "org.apache.commons.dbcp.testWhileIdle=false",
-    "org.apache.commons.dbcp.timeBetweenEvictionRunsMillis=30000",
-    "org.apache.commons.dbcp.minEvictableIdleTimeMillis=40000"
-})
-package examples.quickstart.pojo;
-import org.plasma.runtime.annotation.NamespaceService;
-import org.plasma.runtime.annotation.NamespaceProvisioning;
-import org.plasma.sdo.annotation.Namespace;
-import org.plasma.sdo.annotation.Alias;
+@NamespaceService(storeType = DataStoreType.NOSQL, providerName = DataAccessProviderName.HBASE, properties = {
+    "hbase.zookeeper.quorum=zookeeper-host1:2181,zookeeper-host2:2181,zookeeper-host3:2181",
+    "hbase.zookeeper.property.clientPort=2181",
+    "org.plasma.sdo.access.provider.hbase.ConnectionPoolMinSize=1",
+    "org.plasma.sdo.access.provider.hbase.ConnectionPoolMaxSize=80" })
+package examples.quickstart.hbase.pojo;
+
 import org.plasma.runtime.DataAccessProviderName;
 import org.plasma.runtime.DataStoreType;
+import org.plasma.runtime.annotation.NamespaceProvisioning;
+import org.plasma.runtime.annotation.NamespaceService;
+import org.plasma.sdo.annotation.Alias;
+import org.plasma.sdo.annotation.Namespace;
 ```
-
-Namespace 1 – package_info.java
-
 **Add Plasma Maven Plugin**
 ---------------------------
 
-Add the Plasma Maven Plugin with 3 executions which generate data access and
-query (DSL) classes as well as a schema for MySql. See below Plasma Maven Plugin
-Configuration for complete listing.
+Add the Plasma Maven Plugin with 2 executions which generate data access and
+query (DSL) classes. See below Plasma Maven Plugin Configuration for complete
+listing.
 
 See <https://github.com/plasma-framework/plasma-examples-quickstart> for working
 examples which accomplany this guide.
 
-**Generate Source and DDL**
----------------------------
+**Generate Source**
+-------------------
 
-After adding the plugin and 3 executions type:
+After adding the plugin and 2 executions type:
 
-```
 maven generate-sources
-```
 
 The generated data access source code should appear under
 target/generated-sources/quickstart.pojo.model which is the package we specified
-in @NamespaceProvisioning on the namespace. Look in
-target/ddl/mysql-create.sql. Notice the OrgCat enumeration was used to generate
-a MySql check constraint in the HR.ORG table. Plasma supports full round-trip
-engineering of enumerations across all metadata contexts.
-
-```
-CREATE SCHEMA HR;
-CREATE TABLE HR.PERSON ( CRTD_DT DATE NOT NULL, AGE INT, EMP VARCHAR(255), DOB DATE, FN VARCHAR(36) NOT NULL, LN VARCHAR(36) NOT NULL, PRIMARY KEY (FN, LN ) );
-CREATE TABLE HR.ORG ( CRTD_DT DATE NOT NULL, PARENT VARCHAR(255), NAME VARCHAR(36) NOT NULL, ORG_CAT ENUM('N', 'G', 'R', 'W') NOT NULL, PRIMARY KEY(NAME ) );
-ALTER TABLE HR.PERSON ADD CONSTRAINT FK_PERSON1 FOREIGN KEY ( EMP ) REFERENCES HR.ORG ( NAME );
-ALTER TABLE HR.ORG ADD CONSTRAINT FK_ORG1 FOREIGN KEY ( PARENT ) REFERENCES HR.ORG ( NAME );
-CREATE INDEX I_PERSON1 ON HR.PERSON ( EMP );
-CREATE INDEX I_ORG1 ON HR.ORG ( PARENT );
-```
-
-Figure 1 – Generated DDL
-
-Now before we can insert or query data, we need to populate MySql with a schema.
-Using the above schema, or the one generated at target/ddl/mysql-create.sql
-paste or load the schema into MySql.
-
-Figure 2 – Populate MySql with Schema
-
-![](media/248fa96306a3e4a100fd04b605b216e9.png)
+in \@NamespaceProvisioning on the namespace.
 
 **Add Run Time Dependencies**
 -----------------------------
 
 Next, add the following additional dependencies to your Maven project, including
-an RDBMS data access service provider (CloudGraph RDB), the MySql client and a
-connection pooling library, DBCP.
+an HBase data access service provider (CloudGraph HBase).
 
 ```xml
 <dependency>
-    <groupId>org.cloudgraph</groupId>
-    <artifactId>cloudgraph-rdb</artifactId>
-    <version>1.0.8</version>
-</dependency>
-<dependency>
-    <groupId>mysql</groupId>
-    <artifactId>mysql-connector-java</artifactId>
-    <version>5.1.23</version>
-</dependency>
-<dependency>
-    <groupId>commons-dbcp</groupId>
-    <artifactId>commons-dbcp</artifactId>
-    <version>1.4</version>
+  <groupId>org.cloudgraph</groupId>
+  <artifactId>cloudgraph-hbase</artifactId>
+  <version>1.0.8</version>
 </dependency>
 ```
 
-**Insert and Query MySql Data**
+**Insert and Query HBase Data**
 -------------------------------
 
 And finally create a class as below which inserts 2 organizations (parent and
@@ -307,18 +271,19 @@ visualization and debugging. The final output should look like the below XML
 example. See <https://github.com/plasma-framework/plasma-examples-quickstart>
 for working examples which accomplany this guide.
 
-**Figure 3 – Result Graph, Serialized as XML**
+Figure 3 – Result Graph, Serialized as XML
 
 ```xml
-<ns1:Person xmlns:ns1="http://plasma-quickstart-pojo/humanresources"xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    firstName="Mark" lastName="Hamburg (097161)" age="55" createdDate="2017-10-06T07:00:00">
-    <employer name="Best Buy Sales (097161)">
-        <parent name="Best Buy Corporation Inc. (097161)" category="R"></parent>
-    </employer>
+<ns1:Person xmlns:ns1="http://plasma-quickstart-pojo/humanresources" xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  firstName="Mark" lastName="Hamburg (097161)" age="55" createdDate="2017-10-06T07:00:00">
+  <employer name="Best Buy Sales (097161)">
+    <parent name="Best Buy Corporation Inc. (097161)" category="R"></parent>
+  </employer>
 </ns1:Person>
 ```
 
-**Figure 4 – Inser/Query MySql Data**
+
+Figure 4 – Inser/Query HBase Data
 
 ```java
 package examples.quickstart;
@@ -337,7 +302,7 @@ public class ExampleRunner {
 
   public static PlasmaDataGraph runExample() throws IOException {
     SDODataAccessClient client = new SDODataAccessClient(new PojoDataAccessClient(
-        DataAccessProviderName.JDBC));
+        DataAccessProviderName.HBASE));
 
     DataGraph dataGraph = PlasmaDataFactory.INSTANCE.createDataGraph();
     dataGraph.getChangeSummary().beginLogging();
@@ -407,7 +372,7 @@ examples which accomplany this guide.
     </dependency>
     <dependency>
       <groupId>org.cloudgraph</groupId>
-      <artifactId>cloudgraph-rdb</artifactId>
+      <artifactId>cloudgraph-hbase</artifactId>
       <version>${cloudgraph.version}</version>
     </dependency>
   </dependencies>
@@ -440,21 +405,6 @@ examples which accomplany this guide.
         <goal>dsl</goal>
       </goals>
     </execution>                                         
-    <execution>
-      <id>ddl-create-mysql</id>
-      <configuration>
-        <action>create</action>
-        <dialect>mysql</dialect>
-        <additionalClasspathElements>
-          <param>${basedir}/target/classes</param>
-        </additionalClasspathElements>
-        <outputDirectory>${basedir}/target/ddl</outputDirectory>
-        <outputFile>mysql-create.sql</outputFile>
-      </configuration>
-      <goals>
-        <goal>rdb</goal>
-      </goals>
-    </execution>
   </executions>
 </plugin>
 ```

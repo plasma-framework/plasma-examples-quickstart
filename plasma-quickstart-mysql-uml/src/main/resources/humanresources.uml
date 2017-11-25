@@ -76,8 +76,15 @@
   <PlasmaSDOProfile:SDOValueConstraint xmi:id="_AHtPcMcoEeeKwMn1SWG0QA" base_Property="_aogHMMcgEeeKwMn1SWG0QA" maxLength="36"/>
   <PlasmaSDOProfile:SDOAlias xmi:id="_ksjFYMcoEeeKwMn1SWG0QA" base_NamedElement="_ljEh4MchEeeKwMn1SWG0QA" physicalName="CRTD_DT"/>
   <PlasmaSDOProfile:SDOAlias xmi:id="_kJX08McqEeeKwMn1SWG0QA" base_NamedElement="_CcCnYMcZEeeKwMn1SWG0QA" physicalName="HR"/>
-  <PlasmaSDOProfile:SDONamespace xmi:id="_kJhl8McqEeeKwMn1SWG0QA" base_Package="_CcCnYMcZEeeKwMn1SWG0QA" uri="http://plasma-quickstart-pojo/humanresources"/>
+  <PlasmaSDOProfile:SDONamespace xmi:id="_kJhl8McqEeeKwMn1SWG0QA" base_Package="_CcCnYMcZEeeKwMn1SWG0QA" uri="http://plasma-quickstart/humanresources"/>
   <PlasmaSDOProfile:SDOAlias xmi:id="_DNkeEMcxEeeKwMn1SWG0QA" base_NamedElement="_d-9FoMcgEeeKwMn1SWG0QA" physicalName="ORG_CAT"/>
   <PlasmaSDOProfile:SDOEnumerationConstraint xmi:id="_DNuPEMcxEeeKwMn1SWG0QA" base_Property="_d-9FoMcgEeeKwMn1SWG0QA" value="_C3p5cMcmEeeKwMn1SWG0QA"/>
   <PlasmaSDOProfile:SDOValueConstraint xmi:id="_DN4AEMcxEeeKwMn1SWG0QA" base_Property="_d-9FoMcgEeeKwMn1SWG0QA" maxLength="1"/>
+  <PlasmaSDOProfile:SDOAlias xmi:id="_66kNMMfMEeepAcx1qlG0iA" base_NamedElement="_46dKIMcdEeeKwMn1SWG0QA" physicalName="LN"/>
+  <PlasmaSDOProfile:SDOValueConstraint xmi:id="_67A5IMfMEeepAcx1qlG0iA" base_Property="_46dKIMcdEeeKwMn1SWG0QA" maxLength="36"/>
+  <PlasmaSDOProfile:SDOAlias xmi:id="__AFREMfMEeepAcx1qlG0iA" base_NamedElement="_BOdAoMceEeeKwMn1SWG0QA" physicalName="AGE"/>
+  <PlasmaSDOProfile:SDOAlias xmi:id="_It4MEMfNEeepAcx1qlG0iA" base_NamedElement="_z7Q20cceEeeKwMn1SWG0QA" physicalName="EMP"/>
+  <PlasmaSDOProfile:SDOAlias xmi:id="_eInPUMfNEeepAcx1qlG0iA" base_NamedElement="_z7QPwMceEeeKwMn1SWG0QA" physicalName="EMPLOYEE"/>
+  <PlasmaSDOProfile:SDOAlias xmi:id="_kxUosMfNEeepAcx1qlG0iA" base_NamedElement="_hSO0QMcgEeeKwMn1SWG0QA" physicalName="CHILD"/>
+  <PlasmaSDOProfile:SDOAlias xmi:id="_m-H3cMfNEeepAcx1qlG0iA" base_NamedElement="_hSX-MccgEeeKwMn1SWG0QA" physicalName="PARENT"/>
 </xmi:XMI>
